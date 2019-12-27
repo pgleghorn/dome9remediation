@@ -1,7 +1,7 @@
 {
-  "name": "dome9remediation",
+  "name": "pang",
   "version": "1.0.0",
-  "description": "node utility to implement dome9 aws remediations",
+  "description": "node utility to implement dome9 aws remediations (phils amazon network generator)",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pgleghorn/dome9remediation.git"
+    "url": "git+https://github.com/pgleghorn/pang.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/pgleghorn/dome9remediation/issues"
+    "url": "https://github.com/pgleghorn/pang/issues"
   },
-  "homepage": "https://github.com/pgleghorn/dome9remediation#readme",
+  "homepage": "https://github.com/pgleghorn/pang#readme",
   "dependencies": {
     "aws-sdk": "^2.596.0"
   }
