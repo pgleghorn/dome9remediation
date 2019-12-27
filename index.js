@@ -4,6 +4,31 @@ AWS.config.loadFromPath('./config.json');
 
 console.log(`Config loaded`);
 
+async function addNameOriginTags(resourceId, tagNameValue) {
+  var ec2 = new AWS.EC2();
+  try {
+    var params = {
+      Resources: [
+        resourceId
+      ],
+      Tags: [
+        {
+          Key: "Name",
+          Value: tagNameValue
+        },
+	{
+	  Key: "Origin",
+	  Value: "Created by pang " + new Date().toISOString()
+	}
+      ]
+    };
+    let rTag = await ec2.createTags(params).promise();
+    console.log(rTag);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
 /*
 Remediation1
 
@@ -23,19 +48,31 @@ async function remediation1() {
     console.log(`allocating elastic IP`);
     let rIp = await ec2.allocateAddress({ Domain: "vpc" }).promise();
     console.log(rIp);
+    await addNameOriginTags(rIp.AllocationId, "pang-vip");
 
     console.log(`creating vpc`);
     let rVpc = await ec2.createVpc({ CidrBlock: "10.0.0.0/24" }).promise();
     console.log(rVpc);
+    await addNameOriginTags(rVpc.Vpc.VpcId, "pang-vpc");
 
     console.log(`creating subnet`);
     let rSubnet = await ec2.createSubnet({ CidrBlock: "10.0.0.0/24", VpcId: rVpc.Vpc.VpcId }).promise();
     console.log(rSubnet);
+    await addNameOriginTags(rSubnet.Subnet.SubnetId, "pang-subnet");
+
+    console.log(`creating internet gateway`);
+    let rIg = await ec2.createInternetGateway({}).promise();
+    console.log(rIg);
+    await addNameOriginTags(rIg.InternetGateway.InternetGatewayId, "pang-ig");
+
+    console.log(`attaching internet gateway to vpc`);
+    let rIgAttach = await ec2.attachInternetGateway({InternetGatewayId: rIg.InternetGateway.InternetGatewayId, VpcId: rVpc.Vpc.VpcId}).promise();
+    console.log(rIgAttach);
 
     console.log(`creating NAT gateway`);
     let rNat = await ec2.createNatGateway({ AllocationId: rIp.AllocationId, SubnetId: rSubnet.Subnet.SubnetId }).promise();
     console.log(rNat);
-
+    await addNameOriginTags(rNat.NatGateway.NatGatewayId, "pang-nat");
   } catch (e) {
     console.log(e);
   }
