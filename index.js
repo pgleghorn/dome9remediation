@@ -50,11 +50,14 @@ async function remediation1() {
     console.log(rIp);
     await addNameOriginTags(rIp.AllocationId, "pang-vip");
 
-    console.log(`creating vpc`);
-    let rVpc = await ec2.createVpc({ CidrBlock: "10.0.0.0/24" }).promise();
+    console.log(`creating default vpc`);
+    let rVpc = await ec2.createDefaultVpc().promise();
     console.log(rVpc);
     await addNameOriginTags(rVpc.Vpc.VpcId, "pang-vpc");
 
+	  /*
+	   * creating a "default vpc" takes care of this, creates a subnet for each AZ, igw and attaches it
+	   *
     console.log(`creating subnet`);
     let rSubnet = await ec2.createSubnet({ CidrBlock: "10.0.0.0/24", VpcId: rVpc.Vpc.VpcId }).promise();
     console.log(rSubnet);
@@ -68,11 +71,20 @@ async function remediation1() {
     console.log(`attaching internet gateway to vpc`);
     let rIgAttach = await ec2.attachInternetGateway({InternetGatewayId: rIg.InternetGateway.InternetGatewayId, VpcId: rVpc.Vpc.VpcId}).promise();
     console.log(rIgAttach);
+	  */
 
-    console.log(`creating NAT gateway`);
-    let rNat = await ec2.createNatGateway({ AllocationId: rIp.AllocationId, SubnetId: rSubnet.Subnet.SubnetId }).promise();
+    console.log(`fetching the subnets`);
+    let rSubnets = await ec2.describeSubnets().promise();
+    console.log(rSubnets);
+
+    let firstSubnetId = rSubnets.Subnets[0].SubnetId;
+    await addNameOriginTags(firstSubnetId, "pang-firstSubnet");
+
+    console.log(`creating NAT gateway to first subnet ${firstSubnetId}`);
+    let rNat = await ec2.createNatGateway({ AllocationId: rIp.AllocationId, SubnetId: firstSubnetId }).promise();
     console.log(rNat);
     await addNameOriginTags(rNat.NatGateway.NatGatewayId, "pang-nat");
+
   } catch (e) {
     console.log(e);
   }
